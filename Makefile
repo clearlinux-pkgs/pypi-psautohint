@@ -1,5 +1,5 @@
 PKG_NAME := pypi-psautohint
-URL = https://files.pythonhosted.org/packages/bc/58/dceb8b9fbbe9b2e17c7cedfdcd17131240e9685c724f5ede3f3f7c3755fd/psautohint-2.3.1.zip
+URL = https://files.pythonhosted.org/packages/91/74/014da6e9280844cec6a73a04e069d95740e5520fd9477afbf31208d0e2f4/psautohint-2.4.0.tar.gz
 ARCHIVES = 
 
 include ../common/Makefile.common
