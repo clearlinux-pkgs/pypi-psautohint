@@ -4,13 +4,15 @@
 #
 Name     : pypi-psautohint
 Version  : 2.4.0
-Release  : 2
+Release  : 3
 URL      : https://files.pythonhosted.org/packages/91/74/014da6e9280844cec6a73a04e069d95740e5520fd9477afbf31208d0e2f4/psautohint-2.4.0.tar.gz
 Source0  : https://files.pythonhosted.org/packages/91/74/014da6e9280844cec6a73a04e069d95740e5520fd9477afbf31208d0e2f4/psautohint-2.4.0.tar.gz
 Summary  : Python wrapper for Adobe's PostScript autohinter
 Group    : Development/Tools
 License  : Apache-2.0
 Requires: pypi-psautohint-bin = %{version}-%{release}
+Requires: pypi-psautohint-filemap = %{version}-%{release}
+Requires: pypi-psautohint-lib = %{version}-%{release}
 Requires: pypi-psautohint-license = %{version}-%{release}
 Requires: pypi-psautohint-python = %{version}-%{release}
 Requires: pypi-psautohint-python3 = %{version}-%{release}
@@ -33,9 +35,28 @@ BuildRequires : pypi(wheel)
 Summary: bin components for the pypi-psautohint package.
 Group: Binaries
 Requires: pypi-psautohint-license = %{version}-%{release}
+Requires: pypi-psautohint-filemap = %{version}-%{release}
 
 %description bin
 bin components for the pypi-psautohint package.
+
+
+%package filemap
+Summary: filemap components for the pypi-psautohint package.
+Group: Default
+
+%description filemap
+filemap components for the pypi-psautohint package.
+
+
+%package lib
+Summary: lib components for the pypi-psautohint package.
+Group: Libraries
+Requires: pypi-psautohint-license = %{version}-%{release}
+Requires: pypi-psautohint-filemap = %{version}-%{release}
+
+%description lib
+lib components for the pypi-psautohint package.
 
 
 %package license
@@ -58,10 +79,10 @@ python components for the pypi-psautohint package.
 %package python3
 Summary: python3 components for the pypi-psautohint package.
 Group: Default
+Requires: pypi-psautohint-filemap = %{version}-%{release}
 Requires: python3-core
 Provides: pypi(psautohint)
 Requires: pypi(fonttools)
-Requires: pypi(lxml)
 
 %description python3
 python3 components for the pypi-psautohint package.
@@ -70,13 +91,16 @@ python3 components for the pypi-psautohint package.
 %prep
 %setup -q -n psautohint-2.4.0
 cd %{_builddir}/psautohint-2.4.0
+pushd ..
+cp -a psautohint-2.4.0 buildavx2
+popd
 
 %build
 export http_proxy=http://127.0.0.1:9/
 export https_proxy=http://127.0.0.1:9/
 export no_proxy=localhost,127.0.0.1,0.0.0.0
 export LANG=C.UTF-8
-export SOURCE_DATE_EPOCH=1643906996
+export SOURCE_DATE_EPOCH=1656386849
 export GCC_IGNORE_WERROR=1
 export AR=gcc-ar
 export RANLIB=gcc-ranlib
@@ -87,6 +111,15 @@ export FFLAGS="$FFLAGS -O3 -ffat-lto-objects -flto=auto "
 export CXXFLAGS="$CXXFLAGS -O3 -ffat-lto-objects -flto=auto "
 export MAKEFLAGS=%{?_smp_mflags}
 python3 -m build --wheel --skip-dependency-check --no-isolation
+pushd ../buildavx2/
+export CFLAGS="$CFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 -msse2avx"
+export CXXFLAGS="$CXXFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 -msse2avx "
+export FFLAGS="$FFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 "
+export FCFLAGS="$FCFLAGS -m64 -march=x86-64-v3 "
+export LDFLAGS="$LDFLAGS -m64 -march=x86-64-v3 "
+python3 -m build --wheel --skip-dependency-check --no-isolation
+
+popd
 
 %install
 export MAKEFLAGS=%{?_smp_mflags}
@@ -98,6 +131,15 @@ pip install --root=%{buildroot} --no-deps --ignore-installed dist/*.whl
 echo ----[ mark ]----
 cat %{buildroot}/usr/lib/python3*/site-packages/*/requires.txt || :
 echo ----[ mark ]----
+pushd ../buildavx2/
+export CFLAGS="$CFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 "
+export CXXFLAGS="$CXXFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 "
+export FFLAGS="$FFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 "
+export FCFLAGS="$FCFLAGS -m64 -march=x86-64-v3 "
+export LDFLAGS="$LDFLAGS -m64 -march=x86-64-v3 "
+pip install --root=%{buildroot}-v3 --no-deps --ignore-installed dist/*.whl
+popd
+/usr/bin/elf-move.py avx2 %{buildroot}-v3 %{buildroot} %{buildroot}/usr/share/clear/filemap/filemap-%{name}
 
 %files
 %defattr(-,root,root,-)
@@ -106,6 +148,14 @@ echo ----[ mark ]----
 %defattr(-,root,root,-)
 /usr/bin/psautohint
 /usr/bin/psstemhist
+
+%files filemap
+%defattr(-,root,root,-)
+/usr/share/clear/filemap/filemap-pypi-psautohint
+
+%files lib
+%defattr(-,root,root,-)
+/usr/share/clear/optimized-elf/other*
 
 %files license
 %defattr(0644,root,root,0755)
