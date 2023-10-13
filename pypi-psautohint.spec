@@ -5,7 +5,7 @@
 #
 Name     : pypi-psautohint
 Version  : 2.4.0
-Release  : 12
+Release  : 13
 URL      : https://files.pythonhosted.org/packages/91/74/014da6e9280844cec6a73a04e069d95740e5520fd9477afbf31208d0e2f4/psautohint-2.4.0.tar.gz
 Source0  : https://files.pythonhosted.org/packages/91/74/014da6e9280844cec6a73a04e069d95740e5520fd9477afbf31208d0e2f4/psautohint-2.4.0.tar.gz
 Summary  : Python wrapper for Adobe's PostScript autohinter
